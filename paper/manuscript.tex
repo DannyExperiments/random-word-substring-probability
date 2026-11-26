@@ -1,0 +1,74 @@
+\documentclass[11pt,a4paper]{amsart}
+\usepackage[hmargin=.83in,vmargin=.72in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{amssymb}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Exact substring probability for two independent random words}}
+\urlstyle{same}
+\setlength{\emergencystretch}{2em}
+\DeclareMathSizes{8}{8}{8}{8}
+\DeclareMathSizes{9}{9}{8}{8}
+\DeclareMathSizes{10.95}{10.95}{8}{8}
+\renewcommand{\bibliofont}{\normalsize\raggedright}
+\newtheorem{theorem}{Theorem}
+\newcommand{\sharpP}{\#\mathrm{P}}
+\newcommand{\FP}{\mathrm{FP}}
+\title[Exact substring probability]{Exact substring probability for two independent random words}
+\date{}
+\begin{document}
+\begin{abstract}
+Amarilli, Monet, Rapha\"el and Salvati ask for the complexity of computing the probability that one probabilistic word is a contiguous substring of a second independent probabilistic word. We prove $\sharpP$-hardness already for binary words with fixed and independent fair-bit positions. One exact probability query recovers the number of vertex covers of a graph by taking a residue. Corresponding scaled counts are $\sharpP$-complete under polynomial-time counting reductions. For rational positional distributions, the exact probability is computable in $\FP^{\sharpP}$. The coverage method of Karp, Luby and Madras gives a relative approximation scheme and an exact conditional sampler.
+\end{abstract}
+\maketitle
+
+\section{Two probabilistic words}
+A probabilistic word specifies an explicit rational distribution for each position over a finite alphabet. Letters are independent, with potentially different laws at different positions. Draw two such words independently, a pattern $U$ and text $V$. The target is the exact rational probability $q$ that $U$ occurs as a contiguous substring of $V$. This is the Shamir-language question of Amarilli, Monet, Rapha\"el and Salvati \cite[Section~7, p.~5:16]{amrs}, retained in their extended version \cite[Section~8, p.~38]{extended}.
+
+Their Proposition~7.5 \cite{extended} counts text completions for which there exists a compatible completion of a partial pattern. With two independent samples, the probability counts the mass of the matching pattern outcomes for each text. For example, the text $00$ always matches a one-letter wildcard, but it contains an independent fair pattern bit with probability $1/2$. Earlier work also studied occurrence distributions in stationary Bernoulli models, including random patterns \cite{fudos}. The hardness below uses position-dependent distributions.
+
+\section{Exact hardness from vertex covers}
+\begin{theorem}
+Computing $q$ exactly is $\sharpP$-hard even over $\{0,1\}$ with only deterministic letters and independent fair bits. Counting the matching joint coin outcomes of that subclass is $\sharpP$-complete under polynomial-time counting reductions.
+\end{theorem}
+\begin{proof}
+Start from counting all vertex covers of a simple graph $G$ with $n$ vertices and $m$ edges. The cover constraint comprises one positive disjunction per edge, so the hardness is Valiant's Theorem~1, problem~7 \cite{valiant}. One can delete repeated clauses. A clause with the same variable twice forces that variable true, after which covered clauses can be deleted and the forced value recorded. Graphs without edges can be counted directly. We consider $n\ge2$ and $m\ge1$.
+
+Encode a payload $b_1,\ldots,b_{n+3}$ as the block
+\[
+             110\,0b_1\,0b_2\,\cdots\,0b_{n+3}\,0 .
+\]
+In each block the only occurrence of $11$ is its prefix, since the remaining possible ones have zero neighbors. This remains true across block boundaries because each block ends in zero. As the pattern is one block, every match starts at a designated text block boundary. Equality at a boundary is exactly equality of payloads.
+
+The pattern has fair bits $X_1,\ldots,X_n$ followed by three fixed zero payload bits. Its binary separators and prefix are fixed. The text has one block for each edge $\{i,j\}$. In that block set payload positions $i,j$ to zero and make all other payload positions fair. In particular the three extra payload positions are fair. All draws in the text and pattern are independent; the encoding introduces no repeated random bits.
+
+Fix $X=x$. A block cannot match if its edge is covered by $x$. An uncovered edge has exactly one matching completion among $D=2^{n+1}$ equally likely outcomes, since the block has $n-2+3$ free bits. If $b(x)$ counts uncovered edges, the text blocks independently avoid a match in $(D-1)^{b(x)}D^{m-b(x)}$ joint outcomes. Over the full sample space the integer number of nonmatching outcomes is
+\[
+   N=2^nD^m(1-q)
+     =\sum_{x\in\{0,1\}^n}(D-1)^{b(x)}D^{m-b(x)} .
+\]
+Modulo $D-1$, a noncover contributes zero and a cover contributes one. Since the cover count is at most $2^n<D-1$, the least nonnegative residue is that count. The words have polynomial length. The integers used for scaling and the modulus have polynomial bit length. Thus one exact probability query and polynomial-time arithmetic suffice. In the fixed-or-fair subclass, this also works with an oracle for the count of matching joint coin outcomes, since subtracting that count from $2^nD^m$ gives $N$. Membership in $\sharpP$ follows by accepting one branch per fair-bit outcome having a match.
+\end{proof}
+
+\subsection*{Example}
+On the path with vertices $1,2,3$ and edges $12,23$, each text block has $D=16$ completions. The pattern bits $000$ leave both edges uncovered, and $001$ and $100$ leave one each. The remaining five patterns are covers. The nonmatching count is $15^2+2(15\cdot16)+5\cdot16^2=1985$ out of $2048$. Thus $q=63/2048$, and the cover count is the residue $1985\bmod 15=5$.
+
+\section{Rational input and one-sided cases}
+Give each position a common denominator $d$ for its probabilities, for example the product of the denominators at that position. Let $B$ be the product of these positional denominators over both words. Its bit length is polynomial in the input length. For each position, use nondeterministic binary bits to select a ticket in $\{0,\ldots,d-1\}$, rejecting out-of-range bit strings. Partition the tickets into letter sets of cardinalities given by the corresponding integer weights. Each complete ticket sequence occurs on one computation branch. Accept exactly when the resulting words match at some offset. This counts $Bq$ as a $\sharpP$ function. The exact rational $Bq/B$ is therefore in $\FP^{\sharpP}$. The rational itself is an output of a different type from the integer branch count.
+
+If the pattern is deterministic, propagation of the text law through its prefix-matching automaton computes $q$ in polynomial time, with the first full match as an absorbing state. If the text is deterministic, take its distinct factors of the required length, then sum each factor's probability under the pattern distribution. Both cases use polynomial-bit rational arithmetic.
+
+\section{Coverage approximation and conditional sampling}
+The following is an application of the ordered coverage method of Karp, Luby and Madras \cite[Sections~3--4]{klm}. Empty patterns have probability one and overlong patterns have probability zero. Otherwise write $E_i$ for a match at offset $i$, $k$ for the number of offsets, and $\mu$ for the joint law. Let $w_i=\mu(E_i)$ and $S=\sum_i w_i$. Since the paired positions at a fixed offset are disjoint, $w_i$ is the product of inner products of the paired letter distributions. This gives exact $w_i$ and detects $q=0$ by $S=0$.
+
+For $S>0$, draw offset $i$ with probability $w_i/S$, then draw the words under $\mu$ given $E_i$. At a paired position choose one shared symbol with weight proportional to the product of its two letter probabilities. Draw all unpaired letters from their given laws independently. For an outcome $\omega\in E_i$, the joint proposal mass of $(i,\omega)$ is $\mu(\omega)/S$. Keep the proposal exactly when $i$ is the least matching offset. Every matching $\omega$ then has one successful label. The acceptance probability is $p=q/S\ge1/k$, and given acceptance the word pair has law $\mu$ conditioned on a match. Repeating the trial yields exact conditional sampling in expected at most $k$ proposals. One can also use $1/c(\omega)$ as the acceptance score or mean estimator, with $c(\omega)$ the number of matching offsets, since every matching outcome has precisely $c(\omega)$ labels.
+
+To approximate $q$, multiply the mean of the acceptance indicators by $S$. Each indicator has variance at most $p$. For $0<\varepsilon,\delta<1$, Chebyshev's inequality with $O(k/\varepsilon^2)$ trials gives relative error at most $\varepsilon$ with constant success probability greater than $1/2$. The median of $O(\log(1/\delta))$ independent batches bounds the failure probability by $\delta/2$. Matching positions can be found by ordinary string search. All rational sampling weights are of polynomial bit length by forming common denominators as products of their component denominators. For each finite rational distribution, draw a uniform ticket with binary rejection, with probability at least $1/2$ per attempt. Let $M$ be the deterministic polynomial bound on the number of ticket draws in all batches. Capping rejection at $\lceil\log_2(2M/\delta)\rceil$ attempts per ticket, and returning an arbitrary estimate if the cap is reached unsuccessfully, changes the run with probability at most $\delta/2$ by coupling. This gives a fully polynomial randomized approximation scheme in worst-case time and an exact conditional sampler in expected polynomial time. The approximation target is $q$. Recovering a residue of its exact scaled complement requires exact arithmetic.
+
+\section*{Replay and technical disclosure}
+The standard-library replay checks the marker and residue proof on small graphs, the direct calculation for the path example, and the offset coverage identity for fixed, fair and selected nonuniform position laws. These are finite diagnostics alongside the analytic proof. External peer review and formal verification are pending.
+
+ChatGPT Astra 6.2 (OpenAI) generated the recovered proof, approximation appendix and original replay under human direction. OpenAI Codex independently reviewed the mathematics. GPT-6.2 Sol (OpenAI) checked primary sources and prepared the manuscript, extended replay and illustration. DannyExperiments is the project citation identity.
+
+\bibliographystyle{amsplain}
+\bibliography{references}
+\end{document}

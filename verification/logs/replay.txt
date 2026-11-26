@@ -1,0 +1,4 @@
+Marker and binary blocks: 3488 exact comparisons.
+Residue recovery: 71 nonempty labeled graphs; 8 direct full outcome counts.
+Path fixture: 63/2048 matching; 1985 mod 15 = 5 vertex covers.
+Coverage: 729 fixed/fair layouts (657 positive, 72 zero); 65 nonuniform layouts.

@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "Cite this version of the research release."
+type: software
+title: "Exact substring probability for two independent random words"
+authors:
+  - name: "DannyExperiments"
+version: "1.0.0"
+date-released: 2026-11-27
+doi: "10.5281/zenodo.24572575"
+url: "https://doi.org/10.5281/zenodo.24572575"
+repository-code: "https://github.com/DannyExperiments/random-word-substring-probability"
+keywords:
+  - "probabilistic words"
+  - "substring matching"
+  - "Shamir language"
+  - "#P-completeness"
+  - "vertex covers"
+  - "counting reductions"
+  - "Karp–Luby–Madras"
+  - "conditional sampling"
+preferred-citation:
+  type: software
+  title: "Exact substring probability for two independent random words"
+  authors:
+    - name: "DannyExperiments"
+  version: "1.0.0"
+  date-released: 2026-11-27
+  doi: "10.5281/zenodo.24572575"
+  url: "https://doi.org/10.5281/zenodo.24572575"
+  repository-code: "https://github.com/DannyExperiments/random-word-substring-probability"

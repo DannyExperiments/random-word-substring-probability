@@ -1,0 +1,32 @@
+{
+  "title": "Exact substring probability for two independent random words",
+  "upload_type": "software",
+  "publication_date": "2026-11-27",
+  "version": "1.0.0",
+  "creators": [
+    {
+      "name": "DannyExperiments"
+    }
+  ],
+  "keywords": [
+    "probabilistic words",
+    "substring matching",
+    "Shamir language",
+    "#P-completeness",
+    "vertex covers",
+    "counting reductions",
+    "Karp–Luby–Madras",
+    "conditional sampling"
+  ],
+  "description": "<p>This note addresses Amarilli, Monet, Raphaël and Salvati&#x27;s Shamir-language question in Section 7 of On the Complexity of Language Membership for Probabilistic Words (STACS 2026), retained in Section 8 of the extended version. Two independent probabilistic words supply a pattern and text, with independent, position-dependent rational letter laws. Computing the exact probability of a contiguous match is #P-hard even for binary words using only fixed and fair bits. The scaled fair-bit count is #P-complete under polynomial-time counting reductions. For rational laws a common-denominator numerator is a #P function, giving an FP-with-#P-oracle algorithm for the exact fraction.</p><p>The reduction takes one text block per graph edge. A binary marker occurs only at the start of a block. The sampled pattern then encodes one vertex subset shared across all candidate matches. Conditional on this subset, a block can match in exactly one of D outcomes for an uncovered edge and in none for a covered edge. A product of D and D−1 factors counts text outcomes without a match. After averaging over all pattern bits, the integer nonmatch count contains the number of covers as its residue modulo D−1. A single exact probability query suffices.</p><p>The published Proposition 7.5 instead asks whether a sampled text admits some completion of a wildcard pattern. Here the two words are independently sampled. The companion applies the existing Karp–Luby–Madras coverage method to labelled matching offsets. Their masses and conditional draws factor into paired-letter distributions. Keeping the least match gives a fully polynomial randomized relative approximation and an exact match-conditioned sampler in expected polynomial time. This is an application, and the lower bound depends on position-dependent laws and exact output.</p><p>The proof and supplement are accompanied by a standard-library exact replay, rotating example, offline explorer and checksums. It checks 71 small graphs, eight full outcome counts, and 729 fixed-or-fair plus 65 nonuniform coverage layouts. The worked path has 63 matches in 2,048 draws, and 1,985 modulo 15 gives five vertex covers. External peer review and formal verification are pending.</p><p>ChatGPT Astra 6.2 (OpenAI) generated the recovered proof, approximation appendix and original replay under human direction. OpenAI Codex independently reviewed the mathematics. GPT-6.2 Sol (OpenAI) checked primary sources and prepared the manuscript, extended replay and illustration. DannyExperiments is the project citation identity.</p>",
+  "access_right": "open",
+  "license": "other-closed",
+  "notes": "All rights reserved. Publicly downloadable files are supplied without a repository-wide reuse license.",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/DannyExperiments/random-word-substring-probability/releases/tag/v1.0.0",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    }
+  ]
+}

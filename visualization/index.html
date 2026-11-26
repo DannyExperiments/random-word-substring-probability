@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recover vertex covers from a substring probability</title>
+<style>
+:root{color-scheme:dark;--bg:#101b32;--panel:#162640;--edge:#415c80;--text:#f7faff;--muted:#c2cee1;--mint:#6aead7;--amber:#ffd086}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,sans-serif}
+main{max-width:670px;margin:auto;padding:22px 16px 30px}
+h1{font-size:clamp(1.65rem,5.1vw,2.5rem);line-height:1.12;margin:0}
+header p,details{color:var(--muted)}
+header p{margin:.45rem 0 1rem}
+fieldset{margin:0 0 .5rem;border:0;padding:0;min-width:0;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+legend{margin-bottom:4px;color:var(--muted);font-size:.92rem}
+button{min-width:46px;min-height:46px;padding:7px 9px;border:1px solid var(--edge);border-radius:9px;background:#233958;color:var(--text);font:inherit;font-weight:660;cursor:pointer}
+button[aria-pressed=true]{background:var(--mint);color:var(--bg);border-color:var(--mint)}
+button:focus-visible,#graph:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.diagram,.numbers{background:var(--panel);border:1px solid var(--edge);border-radius:14px;overflow:hidden}
+#graph{display:block;width:100%;height:auto;touch-action:pan-y;cursor:grab}
+#graph:active{cursor:grabbing}
+#graph:focus-visible{outline-offset:-5px}
+text{text-anchor:middle;font-family:system-ui,sans-serif;font-weight:700;fill:var(--text)}
+.legend{display:flex;flex-wrap:wrap;justify-content:center;gap:.35rem 1rem;font-size:.86rem;padding:0 .55rem .65rem}
+.amber{color:var(--amber)}.mint{color:var(--mint)}
+.numbers{margin-top:.65rem;padding:.65rem .75rem}
+.numbers p{margin:.2rem 0}
+#residue{font-size:1.2rem;font-weight:720}
+details{margin-top:1rem}summary{cursor:pointer;color:var(--text);font-weight:700}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Recover vertex covers from a substring probability</h1>
+  <p>Each edge adds one text block. Its 16 equally likely outcomes are independent of the other blocks and of the three pattern bits.</p>
+</header>
+<fieldset>
+  <legend>Pattern bits</legend>
+  <button id="bit1" aria-label="Toggle pattern bit 1" aria-pressed="false">x₁ = 0</button>
+  <button id="bit2" aria-label="Toggle pattern bit 2" aria-pressed="false">x₂ = 0</button>
+  <button id="bit3" aria-label="Toggle pattern bit 3" aria-pressed="false">x₃ = 0</button>
+</fieldset>
+<fieldset>
+  <legend>Edges with text blocks</legend>
+  <button id="edge12" aria-label="Toggle edge 1 to 2" aria-pressed="true">1–2</button>
+  <button id="edge23" aria-label="Toggle edge 2 to 3" aria-pressed="true">2–3</button>
+  <button id="edge13" aria-label="Toggle edge 1 to 3" aria-pressed="false">1–3</button>
+  <button id="reset">Reset</button>
+</fieldset>
+<div class="diagram">
+  <svg id="graph" viewBox="0 0 450 225" role="img" tabindex="0" aria-labelledby="graphTitle graphDesc">
+    <title id="graphTitle">Rotatable graph of the three-vertex example</title>
+    <desc id="graphDesc">Edges colored amber have both endpoint bits zero and can match. Mint edges are covered and cannot match.</desc>
+    <g id="plot"></g>
+  </svg>
+  <div class="legend"><span class="amber">Can match</span><span class="mint">Covered</span></div>
+</div>
+<div class="numbers" aria-live="polite" aria-atomic="true">
+  <p id="conditional"></p>
+  <p id="total"></p>
+  <p id="chance"></p>
+  <p id="residue" class="mint"></p>
+</div>
+<details>
+  <summary>How the residue works</summary>
+  <p>For fixed pattern bits, a text block on a covered edge cannot match. Its contribution to the nonmatch count is 16. An uncovered edge has one matching outcome, leaving 15. Multiply these contributions, then sum over the eight possible patterns. Modulo 15, a cover contributes 1 and every other pattern contributes 0.</p>
+  <p>Drag to rotate the graph or use the arrow keys while it has focus. Changing a pattern bit changes its contribution. Changing an edge changes the full instance.</p>
+</details>
+</main>
+<script>
+"use strict";
+const byId = id => document.getElementById(id);
+const endpoints = [[0,1],[1,2],[0,2]];
+const edgeIds = ["edge12","edge23","edge13"];
+const bitIds = ["bit1","bit2","bit3"];
+const indexes = ["₁","₂","₃"];
+let bits = 0, edges = 3, angle = .24, drag = null;
+const graph = byId("graph");
+const layer = byId("plot");
+function render() {
+  const graphEdges = endpoints.filter((_,j) => edges & (1<<j));
+  const uncovered = pattern => graphEdges.filter(([a,b]) => !(pattern & ((1<<a)|(1<<b)))).length;
+  const misses = pattern => 15**uncovered(pattern) * 16**(graphEdges.length - uncovered(pattern));
+  const n = Array.from({length:8},(_,x)=>misses(x)).reduce((a,b)=>a+b,0);
+  const all = 8 * 16**graphEdges.length;
+  const code = bitIds.map((_,j) => (bits>>j)&1).join("");
+  byId("conditional").textContent = code + " leaves " + misses(bits) + " of " + all/8 + " text outcomes without a match.";
+  byId("total").textContent = "All patterns give " + n + " nonmatches in " + all + " draws.";
+  byId("chance").textContent = "Match probability " + (all-n) + "/" + all + ".";
+  byId("residue").textContent = n + " mod 15 = " + n%15 + " vertex covers";
+  bitIds.forEach((id,j) => {
+    const value = (bits>>j)&1;
+    byId(id).setAttribute("aria-pressed", Boolean(value));
+    byId(id).textContent = "x" + indexes[j] + " = " + value;
+  });
+  edgeIds.forEach((id,j)=>byId(id).setAttribute("aria-pressed",Boolean(edges & (1<<j))));
+  const points = bitIds.map((_,j)=>{
+    const th = angle+j*2*Math.PI/3;
+    return [225+132*Math.cos(th),132+51*Math.sin(th),j];
+  });
+  let shape = '<polygon points="' + points.map(([x,y])=>(225+1.18*(x-225))+","+(132+1.18*(y-132))).join(" ") + '" fill="#1e3656" stroke="#476388"/>';
+  for (const [i,j] of graphEdges) {
+    const [ax,ay]=points[i], [bx,by]=points[j];
+    const tint=bits & ((1<<i)|(1<<j)) ? "#6aead7" : "#ffd086";
+    shape += '<line x1="'+ax+'" y1="'+ay+'" x2="'+bx+'" y2="'+by+'" stroke="'+tint+'" stroke-width="7" stroke-linecap="round"/>';
+  }
+  for (const [x,y,j] of [...points].sort((a,b)=>a[1]-b[1])) {
+    const value = (bits>>j)&1;
+    const fill = value ? "#18786d" : "#40567a";
+    const border = value ? "#6aead7" : "#a0b1ca";
+    shape += '<ellipse cx="'+x+'" cy="'+y+'" rx="22" ry="8" fill="#0c192f"/>';
+    shape += '<circle cx="'+x+'" cy="'+(y-21)+'" r="21" fill="'+fill+'" stroke="'+border+'" stroke-width="2"/>';
+    shape += '<text x="'+x+'" y="'+(y-15)+'" font-size="19">'+(j+1)+'</text>';
+    shape += '<text x="'+x+'" y="'+(y+23)+'" font-size="16">'+value+'</text>';
+  }
+  layer.innerHTML = shape;
+}
+bitIds.forEach((id,j)=>byId(id).addEventListener("click",()=>{bits^=1<<j;render();}));
+edgeIds.forEach((id,j)=>byId(id).addEventListener("click",()=>{edges^=1<<j;render();}));
+byId("reset").addEventListener("click",()=>{bits=0;edges=3;angle=.24;render();});
+graph.addEventListener("pointerdown",e=>{drag=e.clientX;graph.setPointerCapture(e.pointerId);});
+graph.addEventListener("pointermove",e=>{if(drag!==null){angle+=(e.clientX-drag)/85;drag=e.clientX;render();}});
+graph.addEventListener("lostpointercapture",()=>{drag=null;});
+graph.addEventListener("keydown",e=>{
+  if(e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  e.preventDefault();angle+=e.key==="ArrowLeft"?-.12:.12;render();
+});
+render();
+</script>
+</body>
+</html>
